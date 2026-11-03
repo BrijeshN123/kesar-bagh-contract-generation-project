@@ -8,7 +8,7 @@ import { parseDraft, parseForGeneration } from './domain/booking-schema.js';
 import { calculateFinancials } from './domain/financials.js';
 import { collectWarnings } from './domain/warnings.js';
 import { validateBookingMinimums, validateBuyout, validatePaymentSchedule } from './domain/rules.js';
-import { generateContractPdf from './pdf/generate-contract.js';
+import { generateContractPdf } from './pdf/generate-contract.js';
 
 const ROOT = resolve(process.cwd());
 const PUBLIC = resolve(ROOT, 'public');
