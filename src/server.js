@@ -8,7 +8,7 @@ import { parseDraft, parseForGeneration } from './domain/booking-schema.js';
 import { calculateFinancials } from './domain/financials.js';
 import { collectWarnings } from './domain/warnings.js';
 import { validateBookingMinimums, validateBuyout, validatePaymentSchedule } from './domain/rules.js';
-import { generateContractPdf } from './pdf/generate-contract.js';
+import import { generateContractPdf } from './pdf/generate-contract.js';
 
 const ROOT = resolve(process.cwd());
 const PUBLIC = resolve(ROOT, 'public');
@@ -35,8 +35,10 @@ async function serveStatic(pathname, response) {
   response.writeHead(200, { ...securityHeaders(), 'content-type': MIME[extname(filePath)] || 'application/octet-stream', 'content-length': bytes.length, 'cache-control': extname(filePath) === '.html' ? 'no-store' : 'public, max-age=3600' }); response.end(bytes);
 }
 
-export async function createAppServer() {
-  const db = await openDatabase(); const repo = createRepository(db);
+export async function createAppServer({ database = null, repository = null } = {}) {
+  const ownsDatabase = !database && !repository;
+  const db = database || (repository ? null : await openDatabase());
+  const repo = repository || createRepository(db);
   let logoBytes = null; try { logoBytes = await readFile(LOGO_PATH); } catch { /* optional logo */ }
   const server = createHttpServer(async (request, response) => {
     try {
@@ -79,7 +81,7 @@ export async function createAppServer() {
       return json(response, 405, { error: 'Method not allowed.' });
     } catch (error) { console.error('[request]', error?.stack || error?.message || 'Unexpected error'); return json(response, error.status || 500, { error: error.status ? error.message : 'Unexpected server error. Your draft has not been deleted.' }); }
   });
-  server.on('close', () => db.close()); return server;
+  if (ownsDatabase) server.on('close', () => db.close()); return server;
 }
 async function loadDotEnv() {
   try { const contents = await readFile(resolve(process.cwd(), '.env'), 'utf8'); for (const rawLine of contents.split(/\r?\n/)) { const line = rawLine.trim(); if (!line || line.startsWith('#')) continue; const separator = line.indexOf('='); if (separator < 1) continue; const key = line.slice(0, separator).trim(); const value = line.slice(separator + 1).trim().replace(/^['"]|['"]$/g, ''); if (process.env[key] === undefined) process.env[key] = value; } } catch (error) { if (error.code !== 'ENOENT') throw error; }
