@@ -1,0 +1,1 @@
+Project source snapshot: Kesar Bagh Contract Studio v1.1.9. This manifest records the import branch. The source ZIP contains the application files, including public/, src/, test/, docs/, package.json, and setup scripts.
